@@ -146,19 +146,7 @@ namespace CubePuzzle
                 }
             }
 
-            // Create and add target cubes to the 3D scene
-          /*foreach (var cubePos in _targetCubes)
-            {
-                int x = (int)cubePos.X;
-                int y = (int)cubePos.Y;
-                int z = (int)cubePos.Z;
-                var cube = CreateCube(x, y, z, Brushes.Blue); // Use blue for target cubes
-                var wireframe = CreateCubeWireframe();
-                wireframe.Transform = new TranslateTransform3D(x + 0.5, y + 0.5, z + 0.5);
-                _cubeModels[cubePos] = (cube, wireframe);
-                MainModelGroup.Children.Add(cube);
-                MainModelGroup.Children.Add(wireframe);
-            }*/
+    
 
             // Update preview cube position
             if (_userCubes.Any())
@@ -933,3 +921,4 @@ namespace CubePuzzle
         }
     }
 }
+//послание
