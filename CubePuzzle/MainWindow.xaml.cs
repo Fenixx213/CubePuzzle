@@ -7,6 +7,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace CubePuzzle
 {
@@ -23,11 +24,11 @@ namespace CubePuzzle
         private int _previewX, _previewY, _previewZ;
         private List<GeometryModel3D> _debugMarkers = new List<GeometryModel3D>();
         private Dictionary<Point3D, (GeometryModel3D cube, GeometryModel3D wireframe)> _cubeModels = new Dictionary<Point3D, (GeometryModel3D, GeometryModel3D)>(); // Track cube models
-        private double _theta = Math.PI; // Azimuth (horizontal angle)
+        private double _theta = 3*Math.PI/4; // Azimuth (horizontal angle)
         private double _phi = Math.PI / 2;   // Elevation (vertical angle)
         private readonly double _radius = 10; // Distance from camera to origin
         private readonly double _rotationSpeed = 0.005; // Adjusted for smoother camera rotation
-
+        private DispatcherTimer statusTimer;
         public MainWindow()
         {
             InitializeComponent();
@@ -202,7 +203,13 @@ namespace CubePuzzle
             TopViewCanvas.Children.Clear();
             FrontViewCanvas.Children.Clear();
             LeftViewCanvas.Children.Clear();
-
+            statusTimer = new DispatcherTimer();
+            statusTimer.Interval = TimeSpan.FromSeconds(2);
+            statusTimer.Tick += (s, e) =>
+            {
+                StatusText.Text = "";
+                statusTimer.Stop();
+            };
             // Calculate 2D projections
             var views = Calculate2DViews();
 
@@ -367,7 +374,7 @@ namespace CubePuzzle
                     _previewX = x;
                     _previewY = y;
                     _previewZ = z;
-                    AddDebugMarker(new Point3D(x + 0.5, y + 0.5, z + 0.5));
+                 //   AddDebugMarker(new Point3D(x + 0.5, y + 0.5, z + 0.5));
                 }
             }
             else
@@ -386,7 +393,7 @@ namespace CubePuzzle
                             _previewX = x;
                             _previewY = y;
                             _previewZ = z;
-                            AddDebugMarker(intersection);
+                          //  AddDebugMarker(intersection);
                         }
                     }
                 }
@@ -632,7 +639,7 @@ namespace CubePuzzle
             mesh.Positions = points;
             mesh.TriangleIndices = indices;
 
-            Brush cubeBrush = color ?? new SolidColorBrush(Color.FromRgb((byte)_random.Next(256), (byte)_random.Next(256), (byte)_random.Next(256)));
+            Brush cubeBrush = color ?? new SolidColorBrush(Color.FromRgb(65, 105, 225)); 
             var cubeModel = new GeometryModel3D
             {
                 Geometry = mesh,
@@ -894,7 +901,8 @@ namespace CubePuzzle
         {
             if (_userCubes.Count != _targetCubes.Count)
             {
-                MessageBox.Show("Решение неверно. Количество кубов не совпадает.");
+                ShowStatus("Неверно.");
+
                 return;
             }
 
@@ -904,8 +912,8 @@ namespace CubePuzzle
 
             // Check if the structure matches by comparing relative positions
             bool isCorrect = AreCubesStructurallyEquivalent(normalizedTargetCubes, normalizedUserCubes);
+            ShowStatus(isCorrect ? "Верно!" : "Неверно.");
 
-            MessageBox.Show(isCorrect ? "Решение верно!" : "Решение неверно. Попробуйте снова.");
         }
         private void ExitButton_Click(object sender, RoutedEventArgs e) {
             Close();
@@ -943,6 +951,13 @@ namespace CubePuzzle
                 }
             }
             return true;
+        }
+        private void ShowStatus(string message)
+        {
+            StatusText.Text = message;
+            StatusText.Visibility = Visibility.Visible;
+            statusTimer.Stop(); // сбрасываем, если таймер уже бежит
+            statusTimer.Start(); // запускаем заново
         }
     }
 
